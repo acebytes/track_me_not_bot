@@ -23,7 +23,7 @@ def find_url(text):
 def remove_the_tracking(parsed_url):
 
     # Check if the domain is www.youtube.com
-    if parsed_url.netloc == 'www.youtube.com':
+    if "youtu" in parsed_url.netloc:
         # Parse query parameters
         query_params = parse_qs(parsed_url.query)
         # Keep only the 'v' parameter
