@@ -10,7 +10,7 @@ def find_url(text):
     # This regex pattern is designed to find most URLs.
     # It looks for strings starting with http:// or https://,
     # followed by one or more characters that are not spaces.
-    pattern = r'http[s]?://[^\s]+'
+    pattern = r'https?://[\w.-]+(?:\.[\w.-]+)*[/\w.-]*(?:\?\S+)?(?=\s|$)'
     match = re.search(pattern, text)
 
     # If a match is found, return the matched URL.
