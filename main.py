@@ -43,26 +43,35 @@ TELEGRAM_API_TOKEN = os.environ['TELEGRAM_API_TOKEN']
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(f'Hello {update.effective_user.first_name}')
 
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(f'Send me a url to remove tracking parameters. Tested on YT, IG, eBay, and more')
+
 
 async def removeTracking(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-   # Parse the URL into components
-    parsed_url = urlparse(update.message.text)
 
-    # Check if the URL is a valid URL
-    if(bool(parsed_url.scheme) and bool(parsed_url.netloc)):
-      trimmed_url = remove_the_tracking(parsed_url)
+    # Using regex to extract the first URL from the text
+    url_pattern = r'https?://[\w.-]+(?:\.[\w.-]+)*[/\w.-]*(?:\?\S+)?(?=\s|$)'
+    match = re.search(url_pattern, update.message.text)
+
+    if match:
+      url = match.group(0)
+      parsed_url = urlparse(url)
+
+      # Check if the URL is a valid URL
+      if(bool(parsed_url.scheme) and bool(parsed_url.netloc)):
+        trimmed_url = remove_the_tracking(parsed_url)
+        await update.message.reply_text(trimmed_url)
       
+      else:
+        await update.message.reply_text("no URL found")
     else:
-      url = find_url(update.message.text)
-      trimmed_url = remove_the_tracking(url)
-  
-    await update.message.reply_text(trimmed_url)
-      # await update.message.reply_text("Send url only.")
-  
+        await update.message.reply_text("no URL found")
+
 
 app = ApplicationBuilder().token(TELEGRAM_API_TOKEN).build()
 
 app.add_handler(CommandHandler("hello", hello))
+app.add_handler(CommandHandler("help", help))
 app.add_handler(MessageHandler(filters=None, callback=removeTracking))
 
 app.run_webhook(listen='0.0.0.0', port=8080, webhook_url=os.environ['TELEGRAM_WEBHOOK_URL'])
