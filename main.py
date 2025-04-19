@@ -174,12 +174,17 @@ try:
         raise ValueError("TELEGRAM_WEBHOOK_URL environment variable is missing")
     
     logger.info(f"Starting webhook with URL: {webhook_url}")
+    # Configure the webhook with additional parameters
     app.run_webhook(
         listen='0.0.0.0',
         port=8080,
-        webhook_url=webhook_url
+        url_path=TELEGRAM_API_TOKEN,  # Use the bot token as the path
+        webhook_url=f"{webhook_url}/{TELEGRAM_API_TOKEN}",
+        allowed_updates=["message", "callback_query"],
+        drop_pending_updates=True
     )
 except Exception as e:
     logger.error(f"Webhook error: {e}")
-    logger.info("Falling back to polling mode")
-    app.run_polling()
+    logger.error("The error suggests your webhook URL might not be properly configured")
+    logger.info("Falling back to polling mode which is more reliable for development")
+    app.run_polling(drop_pending_updates=True)
