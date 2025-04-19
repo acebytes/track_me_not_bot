@@ -71,11 +71,16 @@ def remove_the_tracking(parsed_url):
         query_string = urlencode(filtered_params, doseq=True)
         
     elif "tiktok" in parsed_url.netloc or "reddit" in parsed_url.netloc:
-    
-        response = requests.get(parsed_url.netloc)
-        clean_url = strip_url_parameters(response.url)
-
-        return clean_url
+        # Use the full URL for request
+        full_url = urlunparse(parsed_url)
+        try:
+            response = requests.get(full_url)
+            clean_url = strip_url_parameters(response.url)
+            return clean_url
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching URL: {e}")
+            # If request fails, just remove the query parameters
+            return urlunparse(parsed_url._replace(query=""))
 
     else:
         # For all other domains, remove the query string
