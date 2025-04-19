@@ -166,8 +166,20 @@ app.add_handler(CommandHandler("help", help))
 # app.add_handler(CommandHandler("get", get_dl))
 
 app.add_handler(MessageHandler(filters.Regex(r'^/get\s+\S+'), get_dl))
-app.add_handler(MessageHandler(filters=None, callback=removeTracking))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, callback=removeTracking))
 
-app.run_webhook(listen='0.0.0.0',
-                port=8080,
-                webhook_url=os.environ['TELEGRAM_WEBHOOK_URL'])
+try:
+    webhook_url = os.environ.get('TELEGRAM_WEBHOOK_URL')
+    if not webhook_url:
+        raise ValueError("TELEGRAM_WEBHOOK_URL environment variable is missing")
+    
+    logger.info(f"Starting webhook with URL: {webhook_url}")
+    app.run_webhook(
+        listen='0.0.0.0',
+        port=8080,
+        webhook_url=webhook_url
+    )
+except Exception as e:
+    logger.error(f"Webhook error: {e}")
+    logger.info("Falling back to polling mode")
+    app.run_polling()
